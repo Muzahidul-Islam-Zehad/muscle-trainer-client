@@ -1,0 +1,26 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16.2dp"
+    android:height="14.7dp"
+    android:viewportWidth="16.2002"
+    android:viewportHeight="14.7">
+
+    <!-- Stroke 3 (Email Outline) -->
+    <path
+        android:name="Stroke_3"
+        android:pathData="M15.6,9.92L15.6,4.77C15.6,2.47 14.06,0.59 11.78,0.59L4.41,0.59C2.13,0.59 0.6,2.47 0.6,4.77L0.6,9.92C0.6,12.23 2.13,14.1 4.41,14.1L11.78,14.1C14.06,14.1 15.6,12.23 15.6,9.92Z"
+        android:strokeWidth="1.2"
+        android:strokeColor="#7B6F72"
+        android:strokeLineJoin="round"
+        android:fillType="evenOdd"
+        android:fillColor="@android:color/transparent"/>
+
+    <!-- Stroke 1 (Email Lines) -->
+    <path
+        android:name="Stroke_1"
+        android:pathData="M12.52,4.98L9.19,7.69C8.56,8.19 7.67,8.19 7.04,7.69L3.68,4.98"
+        android:strokeWidth="1.2"
+        android:strokeColor="#7B6F72"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round"
+        android:fillColor="@android:color/transparent"/>
+</vector>

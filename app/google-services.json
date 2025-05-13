@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "330244892683",
+    "project_id": "muscle-trainer-mobile-app",
+    "storage_bucket": "muscle-trainer-mobile-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:330244892683:android:9efac1ed1e6fc10e35bf0e",
+        "android_client_info": {
+          "package_name": "com.example.muscletrainer"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "330244892683-pj9hr9bs72el6jteb15l3cg09o651589.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD73X8fBdgQV2Cag9LjUUCCo8gJ_SFETYU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "330244892683-pj9hr9bs72el6jteb15l3cg09o651589.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

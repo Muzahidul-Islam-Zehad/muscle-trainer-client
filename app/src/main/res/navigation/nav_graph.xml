@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:startDestination="@id/homeFragment">
+
+    <fragment
+        android:id="@+id/homeFragment"
+        android:name="com.example.muscletrainer.fragments.FragmentHome"
+        android:label="Home" />
+    <fragment
+        android:id="@+id/mealPlannerFragment"
+        android:name="com.example.muscletrainer.fragments.FragmentMealPlanner"
+        android:label="Meal Planner" />
+    <fragment
+        android:id="@+id/workoutPlansFragment"
+        android:name="com.example.muscletrainer.fragments.FragmentWorkoutPlans"
+        android:label="Workout Plans" />
+    <fragment
+        android:id="@+id/profileFragment"
+        android:name="com.example.muscletrainer.fragments.FragmentProfile"
+        android:label="Profile" />
+</navigation>
