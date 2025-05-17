@@ -8,6 +8,7 @@ import android.text.TextWatcher
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -19,6 +20,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.example.muscletrainer.model.User
 import com.example.muscletrainer.network.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.UserProfileChangeRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -97,7 +99,7 @@ class RegisterPage : AppCompatActivity() {
 
         registerButton.setOnClickListener {
 
-            //firebase register
+            val userName = nameEditText.text.toString()
             val email = emailEditText.text.toString()
             val password = passwordEditText.text.toString()
 
@@ -105,31 +107,39 @@ class RegisterPage : AppCompatActivity() {
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
-                            // Registration success
                             val user = auth.currentUser
-                            //send data to backend.
-                            val timezoneId = java.util.TimeZone.getDefault().id
-                            createUser(User(userName = nameEditText.text.toString(), email = email, location = timezoneId))
 
-                            Toast.makeText(this, "Registered: ${user?.email}", Toast.LENGTH_SHORT).show()
+                            //  Update Firebase display name
+                            val profileUpdates = UserProfileChangeRequest.Builder()
+                                .setDisplayName(userName)
+                                .build()
 
-                            // Navigate to next screen
-                            startActivity(Intent(this, CompleteProfile::class.java))
+                            user?.updateProfile(profileUpdates)
+                                ?.addOnCompleteListener { updateTask ->
+                                    if (updateTask.isSuccessful) {
+                                        //  Send to backend after profile updated
+                                        val timezoneId = java.util.TimeZone.getDefault().id
+                                        createUser(User(userName = userName, email = email, location = timezoneId))
+
+                                        Toast.makeText(this, "Registered: ${user.email}", Toast.LENGTH_SHORT).show()
+
+                                        //  Navigate to next screen
+                                        startActivity(Intent(this, CompleteProfile::class.java))
+                                        finish()
+                                    } else {
+                                        Toast.makeText(this, "Profile update failed: ${updateTask.exception?.message}", Toast.LENGTH_SHORT).show()
+                                    }
+                                }
+
                         } else {
-                            // Registration failed
                             Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
             } else {
                 Toast.makeText(this, "Enter valid email and password (min 6 characters)", Toast.LENGTH_SHORT).show()
             }
-
-
-            // Proceed to next page
-//            val intent = Intent(this@RegisterPage, LoginPage::class.java)
-//            startActivity(intent)
-//            finish()
         }
+
 //
         loginTextView.setOnClickListener {
             val intent = Intent(this@RegisterPage, LoginPage::class.java)
@@ -138,6 +148,9 @@ class RegisterPage : AppCompatActivity() {
         }
 
 
+        findViewById<ImageButton>(R.id.google1).setOnClickListener {
+            googleAuthManager.startSignIn()
+        }
         //GOOGLE LOGIN DETAILS
         googleAuthManager = GoogleAuthManager(
             activity = this,

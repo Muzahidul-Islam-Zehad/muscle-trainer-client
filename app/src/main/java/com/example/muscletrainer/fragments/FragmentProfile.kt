@@ -24,10 +24,13 @@ class FragmentProfile : Fragment() {
     }
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val userName = AuthManager.getCurrentUser()?.displayName ?: "No User Found"
+        val userName = AuthManager.getCurrentUser()?.displayName ?: "Example User"
         val tvUserName = view.findViewById<TextView>(R.id.userName)
         tvUserName?.text = userName
 
+        val email = AuthManager.getCurrentUser()?.email ?:"Example@mail.com"
+        val userEmail = view.findViewById<TextView>(R.id.userEmail)
+        userEmail?.text = email
 
 
 //        Logout functionality
