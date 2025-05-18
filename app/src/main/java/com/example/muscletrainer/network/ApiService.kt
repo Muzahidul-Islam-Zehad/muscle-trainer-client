@@ -6,11 +6,14 @@ import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
     @GET("/users1")
     suspend fun getUsers() : List<User>
 
+    @GET("/personal-info")
+    suspend fun getPersonalInfo(@Query("email") email: String): PersonalInfo
     @POST("/add-user")
     suspend fun createUser(@Body user: User) : Response<Unit>
 

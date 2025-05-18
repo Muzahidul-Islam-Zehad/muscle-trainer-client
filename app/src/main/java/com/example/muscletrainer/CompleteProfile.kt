@@ -87,9 +87,9 @@ class CompleteProfile : AppCompatActivity() {
             val personalInfo = PersonalInfo(
                 email = AuthManager.getCurrentUser()?.email ?: "",
                 gender = selectedGender,
-                birthDate = birthDate,
-                weight = weight,
-                height = height,
+                birth_date = birthDate,
+                weight_kg = weight,
+                height_cm = height,
                 bmi = bmi,
                 timezoneId = timezoneId
             )
