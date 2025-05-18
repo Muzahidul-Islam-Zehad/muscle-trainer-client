@@ -4,19 +4,23 @@ import android.app.DatePickerDialog
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Spinner
-import android.widget.Toast
+import android.widget.*
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import java.util.Calendar
+import com.example.muscletrainer.model.PersonalInfo
+import com.example.muscletrainer.network.RetrofitInstance
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.util.*
 
 class CompleteProfile : AppCompatActivity() {
+
+    private var selectedGender: String = "Male" // default
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -27,37 +31,23 @@ class CompleteProfile : AppCompatActivity() {
             insets
         }
 
-//        spinner items
-        val gender = listOf("Male", "Female")
-//        show items
+        // Spinner setup
+        val genderList = listOf("Male", "Female")
         val spinner: Spinner = findViewById(R.id.gender)
-
-        val adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_item,
-            gender
-        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, genderList)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
         spinner.adapter = adapter
-//      handle selection
+
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(parent: AdapterView<*>, view: View, position: Int, id: Long) {
-                val selectedItem = gender[position]
-                Toast.makeText(this@CompleteProfile, "Selected: $selectedItem", Toast.LENGTH_SHORT).show()
+            override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
+                selectedGender = genderList[position]
             }
 
-            override fun onNothingSelected(parent: AdapterView<*>) {
-                // Optional
-            }
+            override fun onNothingSelected(parent: AdapterView<*>) {}
         }
 
-
-
-
-//show and set date picker
+        // Date picker
         val dateInput = findViewById<EditText>(R.id.birthDate)
-
         dateInput.setOnClickListener {
             val calendar = Calendar.getInstance()
             val year = calendar.get(Calendar.YEAR)
@@ -65,17 +55,64 @@ class CompleteProfile : AppCompatActivity() {
             val day = calendar.get(Calendar.DAY_OF_MONTH)
 
             val datePicker = DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
-                val selectedDate = "${selectedDay}/${selectedMonth + 1}/${selectedYear}"
+                val selectedDate = "$selectedDay/${selectedMonth + 1}/$selectedYear"
                 dateInput.setText(selectedDate)
             }, year, month, day)
 
             datePicker.show()
         }
 
-
+        // Button click
         findViewById<Button>(R.id.go_landing).setOnClickListener {
-            startActivity(Intent(this@CompleteProfile, LandingPage::class.java))
-        }
+            val birthDate = dateInput.text.toString()
+            val weightText = findViewById<EditText>(R.id.weightedit).text.toString()
+            val heightText = findViewById<EditText>(R.id.heightedit).text.toString()
 
+            if (birthDate.isBlank() || weightText.isBlank() || heightText.isBlank()) {
+                Toast.makeText(this, "Please complete all fields", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val weight = weightText.toDoubleOrNull()
+            val height = heightText.toDoubleOrNull()
+
+            if (weight == null || height == null) {
+                Toast.makeText(this, "Please enter valid numbers", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val bmi = weight / (height * height)
+            val timezoneId = java.util.TimeZone.getDefault().id
+
+            val personalInfo = PersonalInfo(
+                email = AuthManager.getCurrentUser()?.email ?: "",
+                gender = selectedGender,
+                birthDate = birthDate,
+                weight = weight,
+                height = height,
+                bmi = bmi,
+                timezoneId = timezoneId
+            )
+
+            // 🔥 Send data to backend using Retrofit
+            CoroutineScope(Dispatchers.IO).launch {
+                try {
+                    val response = RetrofitInstance.api.setPersonalInfo(personalInfo)
+                    withContext(Dispatchers.Main) {
+                        if (response.isSuccessful) {
+                            Toast.makeText(this@CompleteProfile, "Profile saved successfully!", Toast.LENGTH_SHORT).show()
+                            startActivity(Intent(this@CompleteProfile, LandingPage::class.java))
+                            finish()
+                        } else {
+                            Toast.makeText(this@CompleteProfile, "Failed to save profile", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@CompleteProfile, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+        }
     }
 }
