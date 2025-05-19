@@ -17,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.muscletrainer.model.User
 import com.example.muscletrainer.network.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
@@ -157,21 +158,46 @@ class RegisterPage : AppCompatActivity() {
             launcher = launcher,
             onSuccess = { user ->
                 val timezoneId = java.util.TimeZone.getDefault().id
+                val email = user.email ?: ""
+
+                // Create user in users table
                 createUser(
                     User(
-                        userName = user.displayName?:"",
-                        email = user.email?:"",
-                        location = timezoneId ?: ""
+                        userName = user.displayName ?: "",
+                        email = email,
+                        location = timezoneId
                     )
                 )
-                Toast.makeText(this@RegisterPage, "usr name: ${user.displayName}", Toast.LENGTH_SHORT).show()
-                // Navigate to next screen
-                startActivity(Intent(this, CompleteProfile::class.java))
+
+                // Now check if personal info already exists
+                lifecycleScope.launch {
+                    try {
+                        val exists = RetrofitInstance.api.checkUserInfoExists(email)
+
+                        if (exists) {
+                            // If personal info exists, go to LandingPage
+                            startActivity(Intent(this@RegisterPage, LandingPage::class.java))
+                        } else {
+                            // Else go to CompleteProfile
+                            startActivity(Intent(this@RegisterPage, CompleteProfile::class.java))
+                        }
+
+                        finish() // Optional: to close LoginPage
+
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@RegisterPage,
+                            "Error checking user info: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             },
             onError = { error ->
                 Toast.makeText(this, "Login failed: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         )
+
 
 
 

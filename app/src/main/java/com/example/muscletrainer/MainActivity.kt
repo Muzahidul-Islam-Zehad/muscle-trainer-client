@@ -2,11 +2,14 @@ package com.example.muscletrainer
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.example.muscletrainer.network.RetrofitInstance
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -25,9 +28,27 @@ class MainActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch {
-            delay(1500);
-            val intent = Intent(this@MainActivity , OnBoarding1::class.java)
-            startActivity(intent)
+            delay(1500)
+            val currentUser = FirebaseAuth.getInstance().currentUser
+
+            if (currentUser != null) {
+                val email = AuthManager.getCurrentUser()?.email ?: return@launch
+                val exists = RetrofitInstance.api.checkUserInfoExists(email)
+
+                Toast.makeText(this@MainActivity, "$exists", Toast.LENGTH_SHORT).show()
+
+                if (exists) {
+                    val intent = Intent(this@MainActivity, LandingPage::class.java)
+                    startActivity(intent)
+                } else {
+                    val intent = Intent(this@MainActivity, CompleteProfile::class.java)
+                    startActivity(intent)
+                }
+            } else {
+                val intent = Intent(this@MainActivity, OnBoarding1::class.java)
+                startActivity(intent)
+            }
+
             finish()
         }
 

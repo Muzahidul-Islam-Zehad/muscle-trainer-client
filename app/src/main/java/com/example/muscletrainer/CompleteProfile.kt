@@ -81,8 +81,7 @@ class CompleteProfile : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            val bmi = weight / (height * height)
-            val timezoneId = java.util.TimeZone.getDefault().id
+            val bmi = (weight * 10000) / (height * height)
 
             val personalInfo = PersonalInfo(
                 email = AuthManager.getCurrentUser()?.email ?: "",
@@ -90,8 +89,7 @@ class CompleteProfile : AppCompatActivity() {
                 birth_date = birthDate,
                 weight_kg = weight,
                 height_cm = height,
-                bmi = bmi,
-                timezoneId = timezoneId
+                bmi = bmi
             )
 
             // 🔥 Send data to backend using Retrofit

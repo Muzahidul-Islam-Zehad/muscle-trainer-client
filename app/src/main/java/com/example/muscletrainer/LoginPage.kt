@@ -18,8 +18,10 @@ import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.lifecycleScope
 import com.example.muscletrainer.model.User
 import com.example.muscletrainer.network.RetrofitInstance
+import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -48,21 +50,46 @@ class LoginPage : AppCompatActivity() {
             launcher = launcher,
             onSuccess = { user ->
                 val timezoneId = java.util.TimeZone.getDefault().id
+                val email = user.email ?: ""
+
+                // Create user in users table
                 createUser(
                     User(
-                        userName = user.displayName?:"",
-                        email = user.email?:"",
-                        location = timezoneId ?: ""
+                        userName = user.displayName ?: "",
+                        email = email,
+                        location = timezoneId
                     )
                 )
-                Toast.makeText(this@LoginPage, "usr name: ${user.displayName}", Toast.LENGTH_SHORT).show()
-                // Navigate to next screen
-                startActivity(Intent(this, CompleteProfile::class.java))
+
+                // Now check if personal info already exists
+                lifecycleScope.launch {
+                    try {
+                        val exists = RetrofitInstance.api.checkUserInfoExists(email)
+
+                        if (exists) {
+                            // If personal info exists, go to LandingPage
+                            startActivity(Intent(this@LoginPage, LandingPage::class.java))
+                        } else {
+                            // Else go to CompleteProfile
+                            startActivity(Intent(this@LoginPage, CompleteProfile::class.java))
+                        }
+
+                        finish() // Optional: to close LoginPage
+
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@LoginPage,
+                            "Error checking user info: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
+                }
             },
             onError = { error ->
                 Toast.makeText(this, "Login failed: ${error.message}", Toast.LENGTH_SHORT).show()
             }
         )
+
 
 
         findViewById<ImageButton>(R.id.googleLogin).setOnClickListener {
@@ -114,10 +141,30 @@ class LoginPage : AppCompatActivity() {
         emailEditText.addTextChangedListener(watcher)
         passwordEditText.addTextChangedListener(watcher)
 
-//        loginButton.setOnClickListener {
-//            val intent = Intent(thiscom.example.gymnesia.LoginPage, WelcomPage::class.java)
-//            startActivity(intent)
-//        }
+        loginButton.setOnClickListener {
+            val email = emailEditText.text.toString().trim()
+            val password = passwordEditText.text.toString().trim()
+
+            if (email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Email and password must not be empty", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+                        // Example: Navigate to HomeActivity
+                        val intent = Intent(this, LandingPage::class.java)
+                        startActivity(intent)
+                        this.finish()
+                    } else {
+                        val errorMessage = task.exception?.localizedMessage ?: "Login failed"
+                        Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
+                    }
+                }
+        }
+
 
         loginTextView.setOnClickListener {
             val intent = Intent(this@LoginPage, RegisterPage::class.java)
