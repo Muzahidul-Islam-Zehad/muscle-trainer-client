@@ -5,9 +5,11 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.View
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -98,6 +100,7 @@ class RegisterPage : AppCompatActivity() {
             registerButton.isEnabled = isFormValid()
         }
 
+        val loadingOverlay = findViewById<FrameLayout>(R.id.loading_overlay)
         registerButton.setOnClickListener {
 
             val userName = nameEditText.text.toString()
@@ -105,6 +108,8 @@ class RegisterPage : AppCompatActivity() {
             val password = passwordEditText.text.toString()
 
             if (email.isNotEmpty() && password.length >= 6) {
+                loadingOverlay.visibility = View.VISIBLE
+
                 auth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener { task ->
                         if (task.isSuccessful) {
@@ -124,15 +129,19 @@ class RegisterPage : AppCompatActivity() {
 
                                         Toast.makeText(this, "Registered: ${user.email}", Toast.LENGTH_SHORT).show()
 
+                                        loadingOverlay.visibility = View.GONE
+
                                         //  Navigate to next screen
                                         startActivity(Intent(this, CompleteProfile::class.java))
                                         finish()
                                     } else {
+                                        loadingOverlay.visibility = View.GONE
                                         Toast.makeText(this, "Profile update failed: ${updateTask.exception?.message}", Toast.LENGTH_SHORT).show()
                                     }
                                 }
 
                         } else {
+                            loadingOverlay.visibility = View.GONE
                             Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
@@ -160,6 +169,8 @@ class RegisterPage : AppCompatActivity() {
                 val timezoneId = java.util.TimeZone.getDefault().id
                 val email = user.email ?: ""
 
+                loadingOverlay.visibility = View.VISIBLE
+
                 // Create user in users table
                 createUser(
                     User(
@@ -182,9 +193,11 @@ class RegisterPage : AppCompatActivity() {
                             startActivity(Intent(this@RegisterPage, CompleteProfile::class.java))
                         }
 
+                        loadingOverlay.visibility = View.GONE
                         finish() // Optional: to close LoginPage
 
                     } catch (e: Exception) {
+                        loadingOverlay.visibility = View.GONE
                         Toast.makeText(
                             this@RegisterPage,
                             "Error checking user info: ${e.message}",
@@ -214,21 +227,21 @@ class RegisterPage : AppCompatActivity() {
 
     }
 
-    private fun fetchUsers() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val users = RetrofitInstance.api.getUsers()
-                withContext(Dispatchers.Main){
-                    Toast.makeText(this@RegisterPage, "$users", Toast.LENGTH_LONG).show()
-                }
-            }
-            catch (e : Exception)
-            {
-                e.printStackTrace()
-            }
-
-        }
-    }
+//    private fun fetchUsers() {
+//        CoroutineScope(Dispatchers.IO).launch {
+//            try {
+//                val users = RetrofitInstance.api.getUsers()
+//                withContext(Dispatchers.Main){
+//                    Toast.makeText(this@RegisterPage, "$users", Toast.LENGTH_LONG).show()
+//                }
+//            }
+//            catch (e : Exception)
+//            {
+//                e.printStackTrace()
+//            }
+//
+//        }
+//    }
     //create user fun
     private fun createUser(user: User) {
         CoroutineScope(Dispatchers.IO).launch {

@@ -23,6 +23,7 @@ class FragmentWorkoutPlans : Fragment() {
     private lateinit var workoutViewModel: WorkoutViewModel
     private lateinit var recyclerView: RecyclerView
     private lateinit var workoutAdapter: WorkoutAdapter
+    private lateinit var loadingOverlay: View
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -32,6 +33,8 @@ class FragmentWorkoutPlans : Fragment() {
         val spinner: Spinner = view.findViewById(R.id.spinnerWorkoutType)
         recyclerView = view.findViewById(R.id.recyclerWorkouts)
         recyclerView.layoutManager = LinearLayoutManager(context)
+
+        loadingOverlay = view.findViewById(R.id.loading_overlay)
 
         workoutAdapter = WorkoutAdapter(mutableListOf())
         recyclerView.adapter = workoutAdapter
@@ -43,6 +46,10 @@ class FragmentWorkoutPlans : Fragment() {
         )[WorkoutViewModel::class.java]
 
         workoutViewModel.workouts.observe(viewLifecycleOwner) {
+            loadingOverlay.animate().alpha(0f).setDuration(200).withEndAction {
+                loadingOverlay.visibility = View.GONE
+            }.start()
+
             workoutAdapter.updateData(it)
         }
 
@@ -53,6 +60,10 @@ class FragmentWorkoutPlans : Fragment() {
         spinner.adapter = adapter
 
         workoutViewModel.error.observe(viewLifecycleOwner) {
+            loadingOverlay.animate().alpha(0f).setDuration(200).withEndAction {
+                loadingOverlay.visibility = View.GONE
+            }.start()
+
             Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
         }
 
@@ -60,6 +71,9 @@ class FragmentWorkoutPlans : Fragment() {
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parent: AdapterView<*>, view: View?, position: Int, id: Long) {
                 val selectedType = workoutTypes[position]
+                loadingOverlay.alpha = 0f
+                loadingOverlay.visibility = View.VISIBLE
+                loadingOverlay.animate().alpha(1f).setDuration(200).start()
                 workoutViewModel.fetchWorkoutsByType(selectedType)
             }
 

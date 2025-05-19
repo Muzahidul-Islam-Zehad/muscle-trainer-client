@@ -42,10 +42,10 @@ class FragmentProfile : Fragment() {
         tvUserName.text = userName
         userEmail.text = email
 
-        // 🚀 Fetch personal info from server
-
+        val loadingOverlay = view.findViewById<FrameLayout>(R.id.loading_overlay)
         lifecycleScope.launch {
             try {
+                loadingOverlay.visibility = View.VISIBLE
                 val personalInfo = RetrofitInstance.api.getPersonalInfo(email)
                 Toast.makeText(requireContext(), "$personalInfo", Toast.LENGTH_LONG).show()
 
@@ -55,7 +55,7 @@ class FragmentProfile : Fragment() {
                 weightText.text = "Weight : ${personalInfo.weight_kg} kg"
                 bmiText.text = "BMI : ${personalInfo.bmi.toString()}"
 
-
+                loadingOverlay.visibility = View.GONE
 
             } catch (e: Exception) {
                 Log.e("ProfileFragment", "Error fetching personal info", e)

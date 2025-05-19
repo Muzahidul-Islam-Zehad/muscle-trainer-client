@@ -16,9 +16,11 @@ class MealViewModel(private val apiService: ApiService) : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> = _error
 
+
     fun fetchMealsByType(type: String) {
         viewModelScope.launch {
             try {
+
                 val response = apiService.getMealsByType(type)
                 _meals.value = response
             } catch (e: Exception) {

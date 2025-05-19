@@ -6,8 +6,10 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.InputType
 import android.text.TextWatcher
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -44,6 +46,7 @@ class LoginPage : AppCompatActivity() {
             insets
         }
 
+        val loadingOverlay = findViewById<FrameLayout>(R.id.loading_overlay)
         //GOOGLE LOGIN DETAILS
         googleAuthManager = GoogleAuthManager(
             activity = this,
@@ -51,7 +54,7 @@ class LoginPage : AppCompatActivity() {
             onSuccess = { user ->
                 val timezoneId = java.util.TimeZone.getDefault().id
                 val email = user.email ?: ""
-
+                loadingOverlay.visibility = View.VISIBLE
                 // Create user in users table
                 createUser(
                     User(
@@ -74,9 +77,11 @@ class LoginPage : AppCompatActivity() {
                             startActivity(Intent(this@LoginPage, CompleteProfile::class.java))
                         }
 
+                        loadingOverlay.visibility = View.GONE
                         finish() // Optional: to close LoginPage
 
                     } catch (e: Exception) {
+                        loadingOverlay.visibility = View.GONE
                         Toast.makeText(
                             this@LoginPage,
                             "Error checking user info: ${e.message}",
@@ -144,7 +149,7 @@ class LoginPage : AppCompatActivity() {
         loginButton.setOnClickListener {
             val email = emailEditText.text.toString().trim()
             val password = passwordEditText.text.toString().trim()
-
+            loadingOverlay.visibility = View.VISIBLE
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(this, "Email and password must not be empty", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -154,11 +159,14 @@ class LoginPage : AppCompatActivity() {
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {
                         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show()
+
+                        loadingOverlay.visibility = View.GONE
                         // Example: Navigate to HomeActivity
                         val intent = Intent(this, LandingPage::class.java)
                         startActivity(intent)
                         this.finish()
                     } else {
+                        loadingOverlay.visibility = View.GONE
                         val errorMessage = task.exception?.localizedMessage ?: "Login failed"
                         Toast.makeText(this, errorMessage, Toast.LENGTH_SHORT).show()
                     }

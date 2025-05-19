@@ -207,5 +207,5 @@
             android:textColor="#673AB6"
             android:textStyle="bold" />
     </LinearLayout>
-
+    <include layout="@layout/loading_overlay" />
 </androidx.constraintlayout.widget.ConstraintLayout>

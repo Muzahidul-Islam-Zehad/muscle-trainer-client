@@ -34,4 +34,6 @@
         android:layout_weight="1"
         android:clipToPadding="false"
         android:padding="10dp" />
+
+    <include layout="@layout/loading_overlay" />
 </LinearLayout>
