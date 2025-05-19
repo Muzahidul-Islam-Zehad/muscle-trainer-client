@@ -1,21 +1,69 @@
 package com.example.muscletrainer.fragments
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.muscletrainer.R
-
+import com.example.muscletrainer.adapter.MealAdapter
+import com.example.muscletrainer.dataProvider.MealViewModel
+import com.example.muscletrainer.factory.MealViewModelFactory
+import com.example.muscletrainer.network.RetrofitInstance
 
 class FragmentMealPlanner : Fragment() {
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_meal_planner, container, false)
-    }
+    private lateinit var mealViewModel: MealViewModel
+    private lateinit var spinnerMealType: Spinner
+    private lateinit var recyclerView: RecyclerView
+    private lateinit var mealAdapter: MealAdapter
 
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_meal_planner, container, false)
+
+        spinnerMealType = view.findViewById(R.id.spinnerMealType)
+        recyclerView = view.findViewById(R.id.recyclerMeals)
+
+        recyclerView.layoutManager = LinearLayoutManager(context)
+        mealAdapter = MealAdapter(mutableListOf())
+        recyclerView.adapter = mealAdapter
+
+        val apiService = RetrofitInstance.api
+        mealViewModel = ViewModelProvider(
+            this, MealViewModelFactory(apiService)
+        )[MealViewModel::class.java]
+
+        mealViewModel.meals.observe(viewLifecycleOwner) {
+            mealAdapter.updateData(it)
+        }
+
+        mealViewModel.error.observe(viewLifecycleOwner) {
+            Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
+        }
+
+        val mealTypes = listOf("breakfast", "lunch", "dinner", "snack")
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, mealTypes)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerMealType.adapter = adapter
+
+        spinnerMealType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                val selectedType = mealTypes[position]
+                mealViewModel.fetchMealsByType(selectedType)
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
+
+        return view
+    }
 }

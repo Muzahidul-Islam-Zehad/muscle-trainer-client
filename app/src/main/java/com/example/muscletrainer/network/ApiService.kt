@@ -1,5 +1,6 @@
 package com.example.muscletrainer.network
 
+import com.example.muscletrainer.model.Meal
 import com.example.muscletrainer.model.PersonalInfo
 import com.example.muscletrainer.model.User
 import com.example.muscletrainer.model.Workout
@@ -21,6 +22,8 @@ interface ApiService {
     @GET("/workout_plan")
     suspend fun getWorkoutsByType(@Query("w_type") type: String): List<Workout>
 
+    @GET("meals")
+    suspend fun getMealsByType(@Query("m_type") type: String): List<Meal>
 
     @POST("/add-user")
     suspend fun createUser(@Body user: User) : Response<Unit>
